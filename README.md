@@ -12,3 +12,7 @@ GET https://coronavirus-19-api.herokuapp.com/countries/{countryName} -> country 
 an ionic frontend is showing the info nicely at https://coronavirus-19-api.herokuapp.com/ 
 ![Global info](https://raw.githubusercontent.com/javieraviles/covidAPI/master/screenshots/tab1.png)
 ![Cases by country](https://raw.githubusercontent.com/javieraviles/covidAPI/master/screenshots/tab2.png)
+
+# Featured
+
+- [Coronavirus Disease COVID-19 Ressources](http://covirusd.com/resources/)
