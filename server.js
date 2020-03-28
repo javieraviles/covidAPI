@@ -4,11 +4,11 @@ var request = require("request");
 var axios = require("axios");
 var cheerio = require("cheerio");
 var db = require("quick.db");
-var cors = require('cors')
+var cors = require("cors");
 
 app.use(cors());
 
-app.use('/', express.static('www'));
+app.use("/", express.static("www"));
 
 var getall = setInterval(async () => {
   let response;
@@ -82,7 +82,7 @@ var getcountries = setInterval(async () => {
   // minus totalColumns to skip last row, which is total
   for (let i = 0; i < countriesTableCells.length - totalColumns; i += 1) {
     const cell = countriesTableCells[i];
-    
+
     // get country
     if (i % totalColumns === countryColIndex) {
       let country =
@@ -141,7 +141,7 @@ var getcountries = setInterval(async () => {
     }
     // get active
     if (i % totalColumns === activeColIndex) {
-      let cured =cell.children.length != 0? cell.children[0].data : "";
+      let cured = cell.children.length != 0 ? cell.children[0].data : "";
       result[result.length - 1].active = parseInt(
         cured.trim().replace(/,/g, "") || 0,
         10
@@ -157,7 +157,8 @@ var getcountries = setInterval(async () => {
     }
     // get total cases per one million population
     if (i % totalColumns === casesPerOneMillionColIndex) {
-      let casesPerOneMillion = cell.children.length != 0? cell.children[0].data : "";
+      let casesPerOneMillion =
+        cell.children.length != 0 ? cell.children[0].data : "";
       result[result.length - 1].casesPerOneMillion = parseInt(
         casesPerOneMillion.trim().replace(/,/g, "") || "0",
         10
@@ -165,7 +166,8 @@ var getcountries = setInterval(async () => {
     }
     // get total deaths per one million population
     if (i % totalColumns === deathsPerOneMillionColIndex) {
-      let deathsPerOneMillion = cell.children.length != 0? cell.children[0].data : "";
+      let deathsPerOneMillion =
+        cell.children.length != 0 ? cell.children[0].data : "";
       result[result.length - 1].deathsPerOneMillion = parseInt(
         deathsPerOneMillion.trim().replace(/,/g, "") || "0",
         10
@@ -173,7 +175,7 @@ var getcountries = setInterval(async () => {
     }
     // get first case date
     if (i % totalColumns === firstCaseColIndex) {
-      let firstCase = cell.children.length != 0? cell.children[0].data : "";
+      let firstCase = cell.children.length != 0 ? cell.children[0].data : "";
       result[result.length - 1].firstCase = firstCase;
     }
   }
@@ -200,18 +202,22 @@ app.get("/all/", async function(req, res) {
 
 app.get("/countries/", async function(req, res) {
   let countries = await db.fetch("countries");
-  res.send(countries);
+  const sortedCases = countries.sort((a, b) => (b.cases > a.cases ? 1 : -1));
+
+  res.send(sortedCases);
 });
 
 app.get("/countries/:country", async function(req, res) {
   let countries = await db.fetch("countries");
-  let country = countries.find(
-  	e => {
-        	if(e.country.toLowerCase().localeCompare(req.params.country.toLowerCase()) === 0)
-        	{
-            return true;
-          }
-  	});
+  let country = countries.find(e => {
+    if (
+      e.country
+        .toLowerCase()
+        .localeCompare(req.params.country.toLowerCase()) === 0
+    ) {
+      return true;
+    }
+  });
   if (!country) {
     res.send("Country not found");
     return;
