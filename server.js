@@ -43,6 +43,9 @@ var getall = setInterval(async () => {
   console.log("Updated The Cases", result);
 }, 150000);
 
+// var to switch between today & yesterday data
+daySwitch = 1;
+
 var getcountries = setInterval(async () => {
   let response;
   try {
@@ -54,19 +57,26 @@ var getcountries = setInterval(async () => {
     return null;
   }
 
+  // select today or yesterday
+  if (daySwitch == 1) {
+    day = "today"; dbName = "countries";
+  } else {
+    day = "yesterday"; dbName = "yesterday";
+  }
+
   // to store parsed data
   const result = [];
 
   // get HTML and parse death rates
   const html = cheerio.load(response.data);
-  const countriesTable = html("table#main_table_countries_today");
+  const countriesTable = html("table#main_table_countries_" + day);
   const countriesTableCells = countriesTable
     .children("tbody")
     .children("tr:not(.row_continent)")
     .children("td");
 
   // count worldometers table columns
-  const colCount = html('table#main_table_countries_today th').length;
+  const colCount = html('table#main_table_countries_' + day + ' th').length;
   
   const totalColumns = colCount;
   const countryColIndex = 1;
@@ -192,8 +202,16 @@ var getcountries = setInterval(async () => {
     }
   }
 
-  db.set("countries", result);
-  console.log("Updated The Countries", result);
+  db.set(dbName, result);
+  console.log("Updated " + day + " Countries", result);
+
+  // increase var until greater then 1 then reset
+  if (daySwitch > 1) {
+    daySwitch = 1;
+  } else {
+    ++daySwitch;
+  }
+
 }, 150000);
 
 app.get("/", async function(request, response) {
@@ -220,6 +238,27 @@ app.get("/countries/", async function(req, res) {
 app.get("/countries/:country", async function(req, res) {
   let countries = await db.fetch("countries");
   let country = countries.find(
+  	e => {
+        	if(e.country.toLowerCase().localeCompare(req.params.country.toLowerCase()) === 0)
+        	{
+            return true;
+          }
+  	});
+  if (!country) {
+    res.send("Country not found");
+    return;
+  }
+  res.send(country);
+});
+
+app.get("/yesterday/", async function(req, res) {
+  let yesterday = await db.fetch("yesterday");
+  res.send(yesterday);
+});
+
+app.get("/yesterday/:country", async function(req, res) {
+  let yesterday = await db.fetch("yesterday");
+  let country = yesterday.find(
   	e => {
         	if(e.country.toLowerCase().localeCompare(req.params.country.toLowerCase()) === 0)
         	{
